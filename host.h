@@ -36,3 +36,16 @@ long medic_host_uptime(void);
  *      256 bytes may be sufficient.
  */
 int medic_kernel_version(char* buffer, size_t size);
+
+/**
+ * Copies the system kernel type to buffer as a null terminated string.
+ *
+ * This function queries the system kernel for the kernel type.
+ * The caller should cache the result.
+ *
+ * @return
+ *      The string assigned to buffer is always null-terminated.
+ *      The caller should ensure the buffer is large enough to hold the version,
+ *      256 bytes may be sufficient.
+ */
+int medic_kernel_type(char* buffer, size_t size);

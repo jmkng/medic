@@ -1,4 +1,7 @@
+#include <CoreFoundation/CoreFoundation.h>
+#include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 
@@ -38,4 +41,80 @@ int medic_kernel_version(char* buffer, size_t size)
         return -1;
 
     return 0;
+}
+
+int medic_kernel_type(char* buffer, size_t size)
+{
+    int mib_path[2] = { CTL_KERN, KERN_OSTYPE };
+
+    int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
+    if (code == -1)
+        return -1;
+
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Core Foundation
+///////////////////////////////////////////////////////////////////////////////
+
+int medic_product_version(char* buffer, size_t size)
+{
+    // https://developer.apple.com/documentation/corefoundation/cfurl
+    CFURLRef system_version_plist_path = CFURLCreateWithFileSystemPath(
+        kCFAllocatorDefault,
+        CFSTR("/System/Library/CoreServices/SystemVersion.plist"),
+        kCFURLPOSIXPathStyle,
+        false);
+    // ... "If a function fails to create a CFURL object,
+    // it returns NULL, which you must be prepared to handle." ...
+    if (!system_version_plist_path)
+        return -1;
+
+    CFReadStreamRef system_version_plist_stream = CFReadStreamCreateWithFile(kCFAllocatorDefault, system_version_plist_path);
+    if (!system_version_plist_stream) {
+        CFRelease(system_version_plist_path);
+        return -1;
+    }
+    if (!CFReadStreamOpen(system_version_plist_stream)) {
+        CFRelease(system_version_plist_stream);
+        CFRelease(system_version_plist_path);
+        return -1;
+    }
+
+    CFMutableDataRef data = CFDataCreateMutable(kCFAllocatorDefault, 0);
+    unsigned char buf[4096];
+
+    CFIndex bytes_read;
+    while ((bytes_read = CFReadStreamRead(system_version_plist_stream, buf, sizeof(buf))) > 0) {
+        CFDataAppendBytes(data, buf, bytes_read);
+    }
+    CFReadStreamClose(system_version_plist_stream);
+    CFRelease(system_version_plist_stream);
+    CFRelease(system_version_plist_path);
+    if (bytes_read < 0) {
+        CFRelease(data);
+        return -1;
+    }
+
+    CFErrorRef error = NULL;
+    CFPropertyListRef system_version_plist = CFPropertyListCreateWithData(
+        kCFAllocatorDefault, data, kCFPropertyListImmutable, NULL, &error);
+    CFRelease(data);
+    if (!system_version_plist || CFGetTypeID(system_version_plist) != CFDictionaryGetTypeID()) {
+        if (system_version_plist)
+            CFRelease(system_version_plist);
+        return -1;
+    }
+
+    CFDictionaryRef dict = (CFDictionaryRef)system_version_plist;
+    CFStringRef product_version = CFDictionaryGetValue(dict, CFSTR("ProductVersion"));
+    if (!product_version) {
+        CFRelease(system_version_plist);
+        return -1;
+    }
+
+    Boolean ok = CFStringGetCString(product_version, buffer, (CFIndex)size, kCFStringEncodingUTF8);
+    CFRelease(system_version_plist);
+    return ok ? 0 : -1;
 }
