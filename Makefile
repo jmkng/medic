@@ -7,14 +7,16 @@ SRC     = main.c
 
 ifeq ($(shell uname),Darwin)
     SRC += $(wildcard *_darwin.c)
+	FW = -framework CoreFoundation
 else ifeq ($(shell uname),Linux)
     SRC += $(wildcard *_linux.c)
+	FW = 
 endif
 
 all: $(TARGET)
 
 $(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(FW)
 
 run: $(TARGET)
 	./$(TARGET)
