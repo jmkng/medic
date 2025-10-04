@@ -10,8 +10,8 @@ long medic_host_boot_time(void)
     struct timeval boottime;
     size_t size = sizeof(boottime);
 
-    int mib[2] = { CTL_KERN, KERN_BOOTTIME };
-    int code = sysctl(mib, 2, &boottime, &size, NULL, 0) != 0;
+    int mib_path[2] = { CTL_KERN, KERN_BOOTTIME };
+    int code = sysctl(mib_path, 2, &boottime, &size, NULL, 0);
     if (code == -1)
         return -1;
 
@@ -27,4 +27,15 @@ long medic_host_uptime(void)
     long now = time(NULL);
     long diff_secs = now - boot_time;
     return diff_secs;
+}
+
+int medic_kernel_version(char* buffer, size_t size)
+{
+    int mib_path[2] = { CTL_KERN, KERN_OSRELEASE };
+
+    int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
+    if (code == -1)
+        return -1;
+
+    return 0;
 }
