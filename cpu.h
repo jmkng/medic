@@ -15,7 +15,7 @@
 int medic_physical_cpu(void);
 
 /**
- * Returns the number of logcal CPU cores available in the current
+ * Returns the number of logical CPU cores available in the current
  * power management mode.
  *
  * Queries the system kernel on each call.
