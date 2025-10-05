@@ -1,8 +1,11 @@
 #include "cpu.h"
 #include <assert.h>
+#include <mach/host_info.h>
+#include <mach/mach_host.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 
 typedef enum {
     PHYSICAL,
@@ -63,4 +66,116 @@ MedicLoadAvg medic_load_avg_default(void)
     mla.error = 0;
 
     return mla;
+}
+
+int medic_cpu_snapshot(MedicCpuSnapshot* times)
+{
+    host_cpu_load_info_data_t cpuinfo;
+    mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
+
+    kern_return_t kr = host_statistics(mach_host_self(),
+        HOST_CPU_LOAD_INFO,
+        (host_info_t)&cpuinfo,
+        &count);
+    if (kr != KERN_SUCCESS) {
+        return -1;
+    }
+
+    // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/sysconf.3.html
+    // _SC_CLK_TCK:
+    //      The frequency of the statistics clock in ticks per second.
+    long ticks_per_sec = sysconf(_SC_CLK_TCK);
+
+    times->user = (double)cpuinfo.cpu_ticks[CPU_STATE_USER] / ticks_per_sec;
+    times->system = (double)cpuinfo.cpu_ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
+    times->nice = (double)cpuinfo.cpu_ticks[CPU_STATE_NICE] / ticks_per_sec;
+    times->idle = (double)cpuinfo.cpu_ticks[CPU_STATE_IDLE] / ticks_per_sec;
+
+    return 0;
+}
+
+double medic_cpu_user_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
+{
+    if (!start || !end)
+        return 0.0;
+
+    double total_ticks_start = start->user + start->system + start->nice + start->idle;
+    double total_ticks_end = end->user + end->system + end->nice + end->idle;
+
+    double total_diff = total_ticks_end - total_ticks_start;
+    double user_diff = end->user - start->user;
+
+    if (total_diff <= 0.0)
+        return 0.0;
+
+    return 100.0 * user_diff / total_diff;
+}
+
+double medic_cpu_system_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
+{
+    if (!start || !end)
+        return 0.0;
+
+    double total_ticks_start = start->user + start->system + start->nice + start->idle;
+    double total_ticks_end = end->user + end->system + end->nice + end->idle;
+
+    double total_diff = total_ticks_end - total_ticks_start;
+    double system_diff = end->system - start->system;
+
+    if (total_diff <= 0.0)
+        return 0.0;
+
+    return 100.0 * system_diff / total_diff;
+}
+
+double medic_cpu_nice_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
+{
+    if (!start || !end)
+        return 0.0;
+
+    double total_ticks_start = start->user + start->system + start->nice + start->idle;
+    double total_ticks_end = end->user + end->system + end->nice + end->idle;
+
+    double total_diff = total_ticks_end - total_ticks_start;
+    double nice_diff = end->nice - start->nice;
+
+    if (total_diff <= 0.0)
+        return 0.0;
+
+    return 100.0 * nice_diff / total_diff;
+}
+
+double medic_cpu_idle_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
+{
+    if (!start || !end)
+        return 0.0;
+
+    double total_ticks_start = start->user + start->system + start->nice + start->idle;
+    double total_ticks_end = end->user + end->system + end->nice + end->idle;
+
+    double total_diff = total_ticks_end - total_ticks_start;
+    double idle_diff = end->idle - start->idle;
+
+    if (total_diff <= 0.0)
+        return 0.0;
+
+    return 100.0 * idle_diff / total_diff;
+}
+
+double medic_cpu_nonidle_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
+{
+    if (!start || !end)
+        return 0.0;
+
+    double total_ticks_start = start->user + start->system + start->nice + start->idle;
+    double total_ticks_end = end->user + end->system + end->nice + end->idle;
+
+    double total_diff = total_ticks_end - total_ticks_start;
+    double idle_diff = end->idle - start->idle;
+
+    if (total_diff <= 0.0)
+        return 0.0;
+
+    double working_ticks = total_diff - idle_diff;
+    return 100.0 * working_ticks / total_diff;
 }

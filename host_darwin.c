@@ -59,6 +59,51 @@ int medic_kernel_type(char* buffer, size_t size)
     return 0;
 }
 
+int medic_arch(char* buffer, size_t size)
+{
+
+    // HW_MACHINE is deprecated, but I'm not sure what the replacement is.
+    // It says to use HW_PRODUCT but that isn't the same information.
+    int mib_path[2] = { CTL_HW, HW_MACHINE };
+
+    int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
+    if (code == -1)
+        return -1;
+
+    return 0;
+}
+
+int medic_hostname(char* buffer, size_t size)
+{
+    int mib_path[2] = { CTL_KERN, KERN_HOSTNAME };
+
+    int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
+    if (code == -1)
+        return -1;
+
+    return 0;
+}
+
+void medic_active_user_stream(MedicUserSink cb, void* data)
+{
+    if (!cb)
+        return;
+
+    setutxent();
+    struct utmpx* entry;
+    while ((entry = getutxent()) != NULL) {
+        if (entry->ut_type == USER_PROCESS && entry->ut_user[0]) {
+            MedicUser user;
+            strncpy(user.name, entry->ut_user, sizeof(user.name));
+            strncpy(user.tty, entry->ut_line, sizeof(user.tty));
+            assert(user.name[sizeof(user.name) - 1] == '\0');
+            assert(user.tty[sizeof(user.tty) - 1] == '\0');
+            cb(&user, data);
+        }
+    }
+    endutxent();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Core Foundation
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,49 +167,4 @@ int medic_product_version(char* buffer, size_t size)
     Boolean ok = CFStringGetCString(product_version, buffer, (CFIndex)size, kCFStringEncodingUTF8);
     CFRelease(system_version_plist);
     return ok ? 0 : -1;
-}
-
-int medic_arch(char* buffer, size_t size)
-{
-
-    // HW_MACHINE is deprecated, but I'm not sure what the replacement is.
-    // It says to use HW_PRODUCT but that isn't the same information.
-    int mib_path[2] = { CTL_HW, HW_MACHINE };
-
-    int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
-    if (code == -1)
-        return -1;
-
-    return 0;
-}
-
-int medic_hostname(char* buffer, size_t size)
-{
-    int mib_path[2] = { CTL_KERN, KERN_HOSTNAME };
-
-    int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
-    if (code == -1)
-        return -1;
-
-    return 0;
-}
-
-void medic_active_user_stream(MedicUserSink cb, void* data)
-{
-    if (!cb)
-        return;
-
-    setutxent();
-    struct utmpx* entry;
-    while ((entry = getutxent()) != NULL) {
-        if (entry->ut_type == USER_PROCESS && entry->ut_user[0]) {
-            MedicUser user;
-            strncpy(user.name, entry->ut_user, sizeof(user.name));
-            strncpy(user.tty, entry->ut_line, sizeof(user.tty));
-            assert(user.name[sizeof(user.name) - 1] == '\0');
-            assert(user.tty[sizeof(user.tty) - 1] == '\0');
-            cb(&user, data);
-        }
-    }
-    endutxent();
 }
