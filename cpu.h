@@ -1,6 +1,6 @@
 #include <stddef.h>
 
-/**
+/*
  * Returns the number of physical CPU cores available in the current
  * power management mode.
  *
@@ -14,7 +14,7 @@
  */
 int medic_physical_cpu(void);
 
-/**
+/*
  * Returns the number of logical CPU cores available in the current
  * power management mode.
  *
@@ -28,7 +28,7 @@ int medic_physical_cpu(void);
  */
 int medic_logical_cpu(void);
 
-/**
+/*
  * Returns the number of processes in the system run queue averaged
  * over a period of time.
  *
@@ -42,7 +42,7 @@ int medic_logical_cpu(void);
  */
 int medic_load_avg(double loadavg[], size_t size);
 
-/**
+/*
  * Represents the system load average over standard time intervals.
  */
 typedef struct {
@@ -52,7 +52,7 @@ typedef struct {
     int error; /**< 0 on success, -1 on error. */
 } MedicLoadAvg;
 
-/**
+/*
  * Returns the number of processes in the system run queue averaged
  * over 1, 5, and 15 minutes.
  *
