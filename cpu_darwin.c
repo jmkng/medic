@@ -1,13 +1,15 @@
+#include "cpu.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/sysctl.h>
 
 typedef enum {
     PHYSICAL,
     LOGICAL
-} _medic_cpu_type;
+} _MedicCpuType;
 
-int _medic_cpu(_medic_cpu_type type)
+int _medic_cpu(_MedicCpuType type)
 {
     assert(type == PHYSICAL || type == LOGICAL);
     const char* sysctl_name = NULL;
@@ -37,4 +39,28 @@ int medic_physical_cpu(void)
 int medic_logical_cpu(void)
 {
     return _medic_cpu(LOGICAL);
+}
+
+int medic_load_avg(double loadavg[], size_t size)
+{
+    return getloadavg(loadavg, size);
+}
+
+MedicLoadAvg medic_load_avg_default(void)
+{
+    MedicLoadAvg mla = { 0 };
+
+    double loadavg[3];
+    int num = medic_load_avg(loadavg, 3);
+    if (num == -1) {
+        mla.error = -1;
+        return mla;
+    }
+
+    mla.load1m = loadavg[0];
+    mla.load5m = loadavg[1];
+    mla.load15m = loadavg[2];
+    mla.error = 0;
+
+    return mla;
 }
