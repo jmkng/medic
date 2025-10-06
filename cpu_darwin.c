@@ -1,7 +1,9 @@
 #include "cpu.h"
 #include <assert.h>
 #include <mach/host_info.h>
+#include <mach/mach.h>
 #include <mach/mach_host.h>
+#include <mach/processor_info.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/sysctl.h>
@@ -68,7 +70,7 @@ MedicLoadAvg medic_load_avg_default(void)
     return mla;
 }
 
-int medic_cpu_snapshot(MedicCpuSnapshot* times)
+int medic_cpu_snapshot(MedicCpuSnapshot* ss)
 {
     host_cpu_load_info_data_t cpuinfo;
     mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
@@ -86,12 +88,43 @@ int medic_cpu_snapshot(MedicCpuSnapshot* times)
     //      The frequency of the statistics clock in ticks per second.
     long ticks_per_sec = sysconf(_SC_CLK_TCK);
 
-    times->user = (double)cpuinfo.cpu_ticks[CPU_STATE_USER] / ticks_per_sec;
-    times->system = (double)cpuinfo.cpu_ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
-    times->nice = (double)cpuinfo.cpu_ticks[CPU_STATE_NICE] / ticks_per_sec;
-    times->idle = (double)cpuinfo.cpu_ticks[CPU_STATE_IDLE] / ticks_per_sec;
+    ss->user = (double)cpuinfo.cpu_ticks[CPU_STATE_USER] / ticks_per_sec;
+    ss->system = (double)cpuinfo.cpu_ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
+    ss->nice = (double)cpuinfo.cpu_ticks[CPU_STATE_NICE] / ticks_per_sec;
+    ss->idle = (double)cpuinfo.cpu_ticks[CPU_STATE_IDLE] / ticks_per_sec;
 
     return 0;
+}
+
+int medic_cpu_snapshot_multi(MedicCpuSnapshot buffer[], size_t size)
+{
+    natural_t cpu_count;
+    processor_info_array_t cpuinfo;
+    mach_msg_type_number_t cpuinfo_count;
+
+    kern_return_t kr = host_processor_info(mach_host_self(),
+        PROCESSOR_CPU_LOAD_INFO,
+        &cpu_count,
+        &cpuinfo,
+        &cpuinfo_count);
+    if (kr != KERN_SUCCESS) {
+        return -1;
+    }
+
+    // See: `medic_cpu_snapshot`.
+    long ticks_per_sec = sysconf(_SC_CLK_TCK);
+
+    size_t filled = cpu_count < size ? cpu_count : size;
+    for (size_t i = 0; i < filled; i++) {
+        integer_t* ticks = &cpuinfo[i * CPU_STATE_MAX];
+        buffer[i].user = (double)ticks[CPU_STATE_USER] / ticks_per_sec;
+        buffer[i].system = (double)ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
+        buffer[i].nice = (double)ticks[CPU_STATE_NICE] / ticks_per_sec;
+        buffer[i].idle = (double)ticks[CPU_STATE_IDLE] / ticks_per_sec;
+    }
+    vm_deallocate(mach_task_self(), (vm_address_t)cpuinfo, cpuinfo_count * sizeof(integer_t));
+
+    return filled;
 }
 
 double medic_cpu_user_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)

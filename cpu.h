@@ -75,11 +75,24 @@ typedef struct {
 
 /*
  * Copies a MedicCpuSnapshot struct with current statistics to ss.
+ * The value is an aggregate over all processor cores.
+ *
+ * For per-core statistics, use `medic_cpu_snapshot_multi`.
  *
  * @return
  *      0 on success; -1 on error.
  */
 int medic_cpu_snapshot(MedicCpuSnapshot* ss);
+
+/*
+ * Copies up to `size` instances of `MedicCpuSnapshot` to buffer.
+ * Each snapshot copied to buffer corresponds to a different processor core.
+ *
+ * @return
+ *      The number of copied `MedicCpuSnapshot` copied to buffer,
+ *      which will never be greater than `size`, or -1 on error.
+ */
+int medic_cpu_snapshot_multi(MedicCpuSnapshot buffer[], size_t size);
 
 /*
  * Returns the percentage of CPU time spent in user mode between two snapshots.
