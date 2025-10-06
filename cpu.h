@@ -89,7 +89,7 @@ int medic_cpu_snapshot(MedicCpuSnapshot* ss);
  * Each snapshot copied to buffer corresponds to a different processor core.
  *
  * @return
- *      The number of copied `MedicCpuSnapshot` copied to buffer,
+ *      The number of `MedicCpuSnapshot` copied to buffer,
  *      which will never be greater than `size`, or -1 on error.
  */
 int medic_cpu_snapshot_multi(MedicCpuSnapshot buffer[], size_t size);
