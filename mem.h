@@ -1,3 +1,6 @@
+#ifndef MEDIC_MEM_H
+#define MEDIC_MEM_H
+
 #include <stdint.h>
 
 /*
@@ -17,3 +20,5 @@ uint64_t medic_mem_size(void);
  *      or 0 on error.
  */
 uint64_t medic_mem_used(uint64_t total_bytes);
+
+#endif

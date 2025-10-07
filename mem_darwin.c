@@ -1,3 +1,5 @@
+#if defined(__APPLE__)
+
 #include "mem.h"
 #include <mach/mach.h>
 #include <stdio.h>
@@ -45,3 +47,5 @@ uint64_t medic_mem_used(uint64_t mem_size)
     uint64_t used_bytes = mem_size - free_bytes - cached_bytes;
     return used_bytes;
 }
+
+#endif
