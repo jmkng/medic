@@ -1,3 +1,5 @@
+#if defined(__APPLE__)
+
 #include "cpu.h"
 #include <assert.h>
 #include <mach/host_info.h>
@@ -30,9 +32,9 @@ int _medic_cpu(_MedicCpuType type)
 
     int num;
     size_t size = sizeof(num);
-    if (sysctlbyname(sysctl_name, &num, &size, NULL, 0) == -1) {
+    if (sysctlbyname(sysctl_name, &num, &size, NULL, 0) == -1)
         return -1;
-    }
+
     return num;
 }
 
@@ -46,32 +48,28 @@ int medic_logical_cpu(void)
     return _medic_cpu(LOGICAL);
 }
 
-int medic_load_avg(double loadavg[], size_t size)
+int medic_load_avg(struct MedicLoad* ml)
 {
-    return getloadavg(loadavg, size);
-}
-
-MedicLoadSnapshot medic_load_avg_default(void)
-{
-    MedicLoadSnapshot mla = { 0 };
+    if (ml == NULL)
+        return -1;
 
     double loadavg[3];
-    int num = medic_load_avg(loadavg, 3);
-    if (num == -1) {
-        mla.error = -1;
-        return mla;
-    }
+    int num = getloadavg(loadavg, 3);
+    if (num == -1)
+        return -1;
 
-    mla.load1m = loadavg[0];
-    mla.load5m = loadavg[1];
-    mla.load15m = loadavg[2];
-    mla.error = 0;
+    ml->load_1 = loadavg[0];
+    ml->load_5 = loadavg[1];
+    ml->load_15 = loadavg[2];
 
-    return mla;
+    return 0;
 }
 
-int medic_cpu_snapshot(MedicCpuSnapshot* ss)
+int medic_cpu(struct MedicCpu* ss)
 {
+    if (ss == NULL)
+        return -1;
+
     host_cpu_load_info_data_t cpuinfo;
     mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
 
@@ -79,9 +77,8 @@ int medic_cpu_snapshot(MedicCpuSnapshot* ss)
         HOST_CPU_LOAD_INFO,
         (host_info_t)&cpuinfo,
         &count);
-    if (kr != KERN_SUCCESS) {
+    if (kr != KERN_SUCCESS)
         return -1;
-    }
 
     // https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/sysconf.3.html
     // _SC_CLK_TCK:
@@ -96,7 +93,7 @@ int medic_cpu_snapshot(MedicCpuSnapshot* ss)
     return 0;
 }
 
-int medic_cpu_snapshot_multi(MedicCpuSnapshot buffer[], size_t size)
+int medic_cpu_stream(MedicCpuSink cb, void* data)
 {
     natural_t cpu_count;
     processor_info_array_t cpuinfo;
@@ -114,101 +111,43 @@ int medic_cpu_snapshot_multi(MedicCpuSnapshot buffer[], size_t size)
     // See: `medic_cpu_snapshot`.
     long ticks_per_sec = sysconf(_SC_CLK_TCK);
 
-    size_t filled = cpu_count < size ? cpu_count : size;
-    for (size_t i = 0; i < filled; i++) {
+    for (size_t i = 0; i < cpu_count; i++) {
         integer_t* ticks = &cpuinfo[i * CPU_STATE_MAX];
-        buffer[i].user = (double)ticks[CPU_STATE_USER] / ticks_per_sec;
-        buffer[i].system = (double)ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
-        buffer[i].nice = (double)ticks[CPU_STATE_NICE] / ticks_per_sec;
-        buffer[i].idle = (double)ticks[CPU_STATE_IDLE] / ticks_per_sec;
+        struct MedicCpu cpu;
+        cpu.user = (double)ticks[CPU_STATE_USER] / ticks_per_sec;
+        cpu.system = (double)ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
+        cpu.nice = (double)ticks[CPU_STATE_NICE] / ticks_per_sec;
+        cpu.idle = (double)ticks[CPU_STATE_IDLE] / ticks_per_sec;
+        cb(&cpu, data);
     }
     vm_deallocate(mach_task_self(), (vm_address_t)cpuinfo, cpuinfo_count * sizeof(integer_t));
 
-    return filled;
+    return 0;
 }
 
-double medic_cpu_user_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
+int medic_cpu_diff(const struct MedicCpu* start,
+    const struct MedicCpu* end,
+    struct MedicCpuDiff* out)
 {
-    if (!start || !end)
-        return 0.0;
+    if (start == NULL || end == NULL || out == NULL)
+        return -1;
 
     double total_ticks_start = start->user + start->system + start->nice + start->idle;
     double total_ticks_end = end->user + end->system + end->nice + end->idle;
 
     double total_diff = total_ticks_end - total_ticks_start;
+    if (total_diff <= 0.0)
+        return -1;
+
     double user_diff = end->user - start->user;
-
-    if (total_diff <= 0.0)
-        return 0.0;
-
-    return 100.0 * user_diff / total_diff;
-}
-
-double medic_cpu_system_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
-{
-    if (!start || !end)
-        return 0.0;
-
-    double total_ticks_start = start->user + start->system + start->nice + start->idle;
-    double total_ticks_end = end->user + end->system + end->nice + end->idle;
-
-    double total_diff = total_ticks_end - total_ticks_start;
-    double system_diff = end->system - start->system;
-
-    if (total_diff <= 0.0)
-        return 0.0;
-
-    return 100.0 * system_diff / total_diff;
-}
-
-double medic_cpu_nice_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
-{
-    if (!start || !end)
-        return 0.0;
-
-    double total_ticks_start = start->user + start->system + start->nice + start->idle;
-    double total_ticks_end = end->user + end->system + end->nice + end->idle;
-
-    double total_diff = total_ticks_end - total_ticks_start;
-    double nice_diff = end->nice - start->nice;
-
-    if (total_diff <= 0.0)
-        return 0.0;
-
-    return 100.0 * nice_diff / total_diff;
-}
-
-double medic_cpu_idle_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
-{
-    if (!start || !end)
-        return 0.0;
-
-    double total_ticks_start = start->user + start->system + start->nice + start->idle;
-    double total_ticks_end = end->user + end->system + end->nice + end->idle;
-
-    double total_diff = total_ticks_end - total_ticks_start;
+    out->user = user_diff;
+    out->system = end->system - start->system;
+    out->nice = end->nice - start->nice;
     double idle_diff = end->idle - start->idle;
+    out->idle = idle_diff;
+    out->nonidle = total_diff - idle_diff;
 
-    if (total_diff <= 0.0)
-        return 0.0;
-
-    return 100.0 * idle_diff / total_diff;
+    return 0;
 }
 
-double medic_cpu_nonidle_percent(const MedicCpuSnapshot* start, const MedicCpuSnapshot* end)
-{
-    if (!start || !end)
-        return 0.0;
-
-    double total_ticks_start = start->user + start->system + start->nice + start->idle;
-    double total_ticks_end = end->user + end->system + end->nice + end->idle;
-
-    double total_diff = total_ticks_end - total_ticks_start;
-    double idle_diff = end->idle - start->idle;
-
-    if (total_diff <= 0.0)
-        return 0.0;
-
-    double working_ticks = total_diff - idle_diff;
-    return 100.0 * working_ticks / total_diff;
-}
+#endif
