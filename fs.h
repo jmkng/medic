@@ -1,10 +1,13 @@
+#ifndef MEDIC_FS_H
+#define MEDIC_FS_H
+
 #include <string.h>
 #include <sys/mount.h>
 #include <sys/param.h>
 
 struct MedicMountStat {
     uint64_t blocks;
-    uint64_t block_size;
+    uint64_t block_size; /* Blocks size in bytes. */
     uint64_t blocks_free;
     uint64_t blocks_avail_non_root;
 };
@@ -46,3 +49,5 @@ void medic_mount_stream(MedicMountSink cb, void* data);
  *      0 on success, or -1 on error.
  */
 int medic_mount_stat(const char* mountpoint, struct MedicMountStat* out);
+
+#endif

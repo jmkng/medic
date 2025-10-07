@@ -1,4 +1,6 @@
-#include "disk.h"
+#if defined(__APPLE__)
+
+#include "fs.h"
 
 void medic_mount_stream(MedicMountSink cb, void* userdata)
 {
@@ -24,6 +26,9 @@ void medic_mount_stream(MedicMountSink cb, void* userdata)
 
 int medic_mount_stat(const char* mountpoint, struct MedicMountStat* out)
 {
+    if (out == NULL)
+        return -1;
+
     struct statfs fs;
     if (statfs(mountpoint, &fs) != 0)
         return -1;
@@ -35,3 +40,5 @@ int medic_mount_stat(const char* mountpoint, struct MedicMountStat* out)
 
     return 0;
 }
+
+#endif
