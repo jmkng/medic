@@ -1,3 +1,5 @@
+#if defined(__APPLE__)
+
 #include "host.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <assert.h>
@@ -9,9 +11,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <utmpx.h>
-
-// SYSCTL(3)
-// https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/sysctl.3.html
 
 long medic_boot_time(void)
 {
@@ -166,3 +165,5 @@ int medic_product_version(char* buffer, size_t size)
     CFRelease(system_version_plist);
     return ok ? 0 : -1;
 }
+
+#endif

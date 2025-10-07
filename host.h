@@ -1,3 +1,6 @@
+#ifndef MEDIC_HOST_H
+#define MEDIC_HOST_H
+
 #include <stddef.h>
 #include <time.h>
 
@@ -58,7 +61,7 @@ struct MedicUser {
 
 /*
  * Callback type used by `medic_active_user_stream`.
- * Each invocation is passed a pointer to a user.
+ * Each invocation is passed a pointer to a `MedicUser`.
  *
  * The pointer is only valid for the duration of the callback invocation;
  * if the value needs to persist, it must be copied by the caller.
@@ -73,3 +76,5 @@ typedef void (*MedicUserSink)(const struct MedicUser* user, void* data);
  * valid only for the duration of the callback.
  */
 void medic_active_user_stream(MedicUserSink cb, void* data);
+
+#endif
