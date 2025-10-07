@@ -33,8 +33,8 @@ uint64_t medic_mem_used(uint64_t mem_size)
     }
 
     uint64_t free_bytes = (vm_stat.free_count - vm_stat.speculative_count) * page_size;
-    uint64_t wired_bytes = vm_stat.wire_count * page_size;
-    uint64_t anon_sub_purgeable_bytes = (vm_stat.internal_page_count - vm_stat.purgeable_count) * page_size;
+    // uint64_t wired_bytes = vm_stat.wire_count * page_size;
+    // uint64_t anon_sub_purgeable_bytes = (vm_stat.internal_page_count - vm_stat.purgeable_count) * page_size;
 
     // This line was an accident.
     // It converts the external page count to bytes, and then adds the bytes to the purgeable page count.

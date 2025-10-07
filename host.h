@@ -51,24 +51,24 @@ int medic_arch(char* buffer, size_t size);
  */
 int medic_hostname(char* buffer, size_t size);
 
-typedef struct {
-    char name[256];
-    char tty[32];
-} MedicUser;
+struct MedicUser {
+    const char* name;
+    const char* tty;
+};
 
 /*
  * Callback type used by `medic_active_user_stream`.
- * Each invocation is passed a pointer to a null-terminated string representing a username.
+ * Each invocation is passed a pointer to a user.
  *
  * The pointer is only valid for the duration of the callback invocation;
  * if the value needs to persist, it must be copied by the caller.
  */
-typedef void (*MedicUserSink)(const MedicUser* user, void* data);
+typedef void (*MedicUserSink)(const struct MedicUser* user, void* data);
 
-/**
+/*
  * Streams currently active user sessions.
  *
- * Calls the given callback for each active user process.
+ * Calls the given callback for each active user session.
  * Each callback invocation receives a pointer to a MedicUser struct,
  * valid only for the duration of the callback.
  */

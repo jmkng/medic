@@ -93,11 +93,9 @@ void medic_active_user_stream(MedicUserSink cb, void* data)
     struct utmpx* entry;
     while ((entry = getutxent()) != NULL) {
         if (entry->ut_type == USER_PROCESS && entry->ut_user[0]) {
-            MedicUser user;
-            strncpy(user.name, entry->ut_user, sizeof(user.name));
-            strncpy(user.tty, entry->ut_line, sizeof(user.tty));
-            assert(user.name[sizeof(user.name) - 1] == '\0');
-            assert(user.tty[sizeof(user.tty) - 1] == '\0');
+            struct MedicUser user;
+            user.name = entry->ut_user;
+            user.tty = entry->ut_line;
             cb(&user, data);
         }
     }

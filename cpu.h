@@ -4,10 +4,6 @@
  * Returns the number of physical CPU cores available in the current
  * power management mode.
  *
- * Queries the system kernel on each call.
- * The result is unlikely to change during program execution,
- * callers may wish to cache the value.
- *
  * @return
  *      Number of physical CPU cores on success,
  *      or -1 on error.
@@ -17,10 +13,6 @@ int medic_physical_cpu(void);
 /*
  * Returns the number of logical CPU cores available in the current
  * power management mode.
- *
- * Queries the system kernel on each call.
- * The result is unlikely to change during program execution,
- * callers may wish to cache the value.
  *
  * @return
  *      Number of logical CPU cores on success,
@@ -51,16 +43,16 @@ typedef struct {
     double load5m; /* Load average over the past 5 minutes. */
     double load15m; /* Load average over the past 15 minutes. */
     int error; /* 0 on success, -1 on error. */
-} MedicLoadAvg;
+} MedicLoadSnapshot;
 
 /*
  * Returns the number of processes in the system run queue averaged
  * over 1, 5, and 15 minutes.
  *
- * This is a convenience wrapper around medic_load_avg() that
+ * This is a convenience wrapper around `medic_load_avg` that
  * returns results in a structured form.
  */
-MedicLoadAvg medic_load_avg_default(void);
+MedicLoadSnapshot medic_load_snapshot(void);
 
 /*
  * Snapshot of CPU time spent in different categories since system boot,

@@ -51,9 +51,9 @@ int medic_load_avg(double loadavg[], size_t size)
     return getloadavg(loadavg, size);
 }
 
-MedicLoadAvg medic_load_avg_default(void)
+MedicLoadSnapshot medic_load_avg_default(void)
 {
-    MedicLoadAvg mla = { 0 };
+    MedicLoadSnapshot mla = { 0 };
 
     double loadavg[3];
     int num = medic_load_avg(loadavg, 3);
