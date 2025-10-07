@@ -12,10 +12,12 @@ void medic_mount_stream(MedicMountSink cb, void* userdata)
         md.mountpoint = mnts[i].f_mntonname;
         md.device = mnts[i].f_mntfromname;
         md.fstype = mnts[i].f_fstypename;
-        md.blocks = mnts[i].f_blocks;
-        md.block_size = mnts[i].f_bsize;
-        md.free_bytes = mnts[i].f_bfree;
-        md.avail_non_root_bytes = mnts[i].f_bavail;
+        struct MedicMountStat stat;
+        stat.blocks = mnts[i].f_blocks;
+        stat.block_size = mnts[i].f_bsize;
+        stat.blocks_free = mnts[i].f_bfree;
+        stat.blocks_avail_non_root = mnts[i].f_bavail;
+        md.stat = stat;
         cb(&md, userdata);
     }
 }
