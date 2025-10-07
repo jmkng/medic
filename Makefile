@@ -1,26 +1,32 @@
-CC      = cc
-CFLAGS  = -Wall -Wextra -std=c23 -pedantic
-TARGET  = medic
-SRC     = main.c
+CC      	= cc
+CFLAGS  	= -Wall -Wextra -std=c23 -pedantic -Iinclude
+TARGET  	= libmedic.a
+DEMOTARGET  = medic
+
+SRC = src/cpu.c src/fs.c src/host.c src/mem.c
+OBJ := $(SRC:.c=.o)
+
+ifeq ($(shell uname),Darwin)
+    FW = -framework CoreFoundation
+else
+    FW =
+endif
 
 .PHONY: all clean run
 
-ifeq ($(shell uname),Darwin)
-    SRC += $(wildcard *_darwin.c)
-	FW = -framework CoreFoundation
-else ifeq ($(shell uname),Linux)
-    SRC += $(wildcard *_linux.c)
-	FW = 
-endif
+all: $(TARGET) $(DEMOTARGET)
 
-all: $(TARGET)
+$(TARGET): $(OBJ)
+	ar rcs $@ $^
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $@ $^ $(FW)
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-run: $(TARGET)
-	./$(TARGET)
+$(DEMOTARGET): $(TARGET) src/main.c
+	$(CC) $(CFLAGS) src/main.c -L. -lmedic $(FW) -o $@
+
+run: $(DEMOTARGET)
+	./$(DEMOTARGET)
 
 clean:
-	rm -f $(TARGET)
-
+	rm -f $(OBJ) $(TARGET) $(DEMOTARGET)

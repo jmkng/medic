@@ -1,2 +1,6 @@
 main.c
 medic
+compile_flags.txt
+.DS_Store
+README.md
+libmedic.a
