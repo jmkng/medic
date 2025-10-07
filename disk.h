@@ -33,3 +33,16 @@ typedef void (*MedicMountSink)(const struct MedicMount* mount, void* data);
  * valid only for the duration of the callback.
  */
 void medic_mount_stream(MedicMountSink cb, void* data);
+
+/*
+ * Copies file system statistics for mountpoint to out.
+ *
+ * When file systems are enumerated with `medic_mount_stream`,
+ * they contain an initial set of statistics.
+ * To retrieve updated statistics for one of those file systems at a later time,
+ * pass the mountpoint field to this function.
+ *
+ * @return
+ *      0 on success, or -1 on error.
+ */
+int medic_mount_stat(const char* mountpoint, struct MedicMountStat* out);

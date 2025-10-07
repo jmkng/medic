@@ -21,3 +21,17 @@ void medic_mount_stream(MedicMountSink cb, void* userdata)
         cb(&md, userdata);
     }
 }
+
+int medic_mount_stat(const char* mountpoint, struct MedicMountStat* out)
+{
+    struct statfs fs;
+    if (statfs(mountpoint, &fs) != 0)
+        return -1;
+
+    out->blocks = fs.f_blocks;
+    out->block_size = fs.f_bsize;
+    out->blocks_free = fs.f_bfree;
+    out->blocks_avail_non_root = fs.f_bavail;
+
+    return 0;
+}
