@@ -6,6 +6,11 @@ struct MedicMount {
     const char* mountpoint;
     const char* device;
     const char* fstype;
+    uint64_t blocks;
+    uint64_t block_size;
+    uint64_t free_bytes;
+    uint64_t avail_non_root_bytes;
+    uint64_t used_bytes;
 };
 
 /*
