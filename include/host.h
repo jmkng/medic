@@ -54,10 +54,10 @@ int medic_arch(char* buffer, size_t size);
  */
 int medic_hostname(char* buffer, size_t size);
 
-struct MedicUser {
+typedef struct {
     const char* name;
     const char* tty;
-};
+} MedicUser;
 
 /*
  * Callback type used by `medic_active_user_stream`.
@@ -66,7 +66,7 @@ struct MedicUser {
  * The pointer is only valid for the duration of the callback invocation;
  * if the value needs to persist, it must be copied by the caller.
  */
-typedef void (*MedicUserSink)(const struct MedicUser* user, void* data);
+typedef void (*MedicUserSink)(const MedicUser* user, void* data);
 
 /*
  * Streams currently active user sessions.

@@ -1,6 +1,3 @@
-#if defined(__APPLE__)
-
-#include "cpu.h"
 #include <assert.h>
 #include <mach/host_info.h>
 #include <mach/mach.h>
@@ -10,14 +7,14 @@
 #include <stdlib.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+#include "cpu.h"
 
 typedef enum {
     PHYSICAL,
     LOGICAL
-} _MedicCpuType;
+} MedicCpuType;
 
-int _medic_cpu(_MedicCpuType type)
-{
+int _medic_cpu(MedicCpuType type) {
     assert(type == PHYSICAL || type == LOGICAL);
     const char* sysctl_name = NULL;
 
@@ -38,18 +35,15 @@ int _medic_cpu(_MedicCpuType type)
     return num;
 }
 
-int medic_physical_cpu(void)
-{
+int medic_physical_cpu(void) {
     return _medic_cpu(PHYSICAL);
 }
 
-int medic_logical_cpu(void)
-{
+int medic_logical_cpu(void) {
     return _medic_cpu(LOGICAL);
 }
 
-int medic_load_avg(struct MedicLoad* ml)
-{
+int medic_load_avg(MedicLoad* ml) {
     if (ml == NULL)
         return -1;
 
@@ -65,8 +59,7 @@ int medic_load_avg(struct MedicLoad* ml)
     return 0;
 }
 
-int medic_cpu(struct MedicCpu* ss)
-{
+int medic_cpu(MedicCpu* ss) {
     if (ss == NULL)
         return -1;
 
@@ -93,8 +86,7 @@ int medic_cpu(struct MedicCpu* ss)
     return 0;
 }
 
-int medic_cpu_stream(MedicCpuSink cb, void* data)
-{
+int medic_cpu_stream(MedicCpuSink cb, void* data) {
     natural_t cpu_count;
     processor_info_array_t cpuinfo;
     mach_msg_type_number_t cpuinfo_count;
@@ -113,7 +105,7 @@ int medic_cpu_stream(MedicCpuSink cb, void* data)
 
     for (size_t i = 0; i < cpu_count; i++) {
         integer_t* ticks = &cpuinfo[i * CPU_STATE_MAX];
-        struct MedicCpu cpu;
+        MedicCpu cpu;
         cpu.user = (double)ticks[CPU_STATE_USER] / ticks_per_sec;
         cpu.system = (double)ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
         cpu.nice = (double)ticks[CPU_STATE_NICE] / ticks_per_sec;
@@ -125,10 +117,7 @@ int medic_cpu_stream(MedicCpuSink cb, void* data)
     return 0;
 }
 
-int medic_cpu_diff(const struct MedicCpu* start,
-    const struct MedicCpu* end,
-    struct MedicCpuDiff* out)
-{
+int medic_cpu_diff(const MedicCpu* start, const MedicCpu* end, MedicCpuDiff* out) {
     if (start == NULL || end == NULL || out == NULL)
         return -1;
 
@@ -149,5 +138,3 @@ int medic_cpu_diff(const struct MedicCpu* start,
 
     return 0;
 }
-
-#endif

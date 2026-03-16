@@ -23,29 +23,27 @@ int medic_physical_cpu(void);
  */
 int medic_logical_cpu(void);
 
-struct MedicLoad {
+typedef struct {
     double load_1;
     double load_5;
     double load_15;
-};
+} MedicLoad;
 
 /*
  * Returns the number of processes in the system run queue averaged
  * over 1, 5, and 15 minutes.
  *
- * Wraps the posix function getloadavg(3).
- *
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_load_avg(struct MedicLoad* ml);
+int medic_load_avg(MedicLoad* ml);
 
-struct MedicCpu {
+typedef struct {
     double user;
     double system;
     double nice;
     double idle;
-};
+} MedicCpu;
 
 /*
  * Copies a MedicCpu struct with current statistics to ss.
@@ -56,7 +54,7 @@ struct MedicCpu {
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu(struct MedicCpu* ss);
+int medic_cpu(MedicCpu* ss);
 
 /*
  * Callback type used by `medic_cpu_stream`.
@@ -65,7 +63,7 @@ int medic_cpu(struct MedicCpu* ss);
  * The pointer is only valid for the duration of the callback invocation;
  * if the value needs to persist, it must be copied by the caller.
  */
-typedef void (*MedicCpuSink)(const struct MedicCpu* cpu, void* data);
+typedef void (*MedicCpuSink)(const MedicCpu* cpu, void* data);
 
 /*
  * Streams processor core statistics.
@@ -79,14 +77,14 @@ typedef void (*MedicCpuSink)(const struct MedicCpu* cpu, void* data);
  */
 int medic_cpu_stream(MedicCpuSink cb, void* data);
 
-struct MedicCpuDiff {
+typedef struct {
     double total;
     double user;
     double system;
     double nice;
     double idle;
     double nonidle;
-};
+} MedicCpuDiff;
 
 /*
  * Copies the difference of two instances of `MedicCpu` to out.
@@ -98,6 +96,6 @@ struct MedicCpuDiff {
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu_diff(const struct MedicCpu* start, const struct MedicCpu* end, struct MedicCpuDiff* out);
+int medic_cpu_diff(const MedicCpu* start, const MedicCpu* end, MedicCpuDiff* out);
 
 #endif
