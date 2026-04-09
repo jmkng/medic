@@ -1,12 +1,14 @@
 #include <assert.h>
-#include <mach/host_info.h>
-#include <mach/mach.h>
-#include <mach/mach_host.h>
-#include <mach/processor_info.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
+
+#include <mach/host_info.h>
+#include <mach/mach.h>
+#include <mach/mach_host.h>
+#include <mach/processor_info.h>
+
 #include "cpu.h"
 
 typedef enum {
@@ -14,7 +16,7 @@ typedef enum {
     LOGICAL
 } MedicCpuType;
 
-int _medic_cpu(MedicCpuType type) {
+int _medic_num_cpu(MedicCpuType type) {
     assert(type == PHYSICAL || type == LOGICAL);
     const char* sysctl_name = NULL;
 
@@ -28,23 +30,23 @@ int _medic_cpu(MedicCpuType type) {
     }
 
     int num;
-    size_t size = sizeof(num);
-    if (sysctlbyname(sysctl_name, &num, &size, NULL, 0) == -1)
+    size_t numsize = sizeof(num);
+    if (sysctlbyname(sysctl_name, &num, &numsize, NULL, 0) == -1)
         return -1;
 
     return num;
 }
 
-int medic_physical_cpu(void) {
-    return _medic_cpu(PHYSICAL);
+int medic_cpu_num_physical(void) {
+    return _medic_num_cpu(PHYSICAL);
 }
 
-int medic_logical_cpu(void) {
-    return _medic_cpu(LOGICAL);
+int medic_cpu_num_logical(void) {
+    return _medic_num_cpu(LOGICAL);
 }
 
-int medic_load_avg(MedicLoad* ml) {
-    if (ml == NULL)
+int medic_cpu_run_queue_triple(MedicCpuRunQueueTriple* ml) {
+    if (!ml)
         return -1;
 
     double loadavg[3];
@@ -59,8 +61,8 @@ int medic_load_avg(MedicLoad* ml) {
     return 0;
 }
 
-int medic_cpu(MedicCpu* ss) {
-    if (ss == NULL)
+int medic_cpu_agg_stat(MedicCpuStat* ss) {
+    if (!ss)
         return -1;
 
     host_cpu_load_info_data_t cpuinfo;
@@ -86,7 +88,7 @@ int medic_cpu(MedicCpu* ss) {
     return 0;
 }
 
-int medic_cpu_stream(MedicCpuSink cb, void* data) {
+int medic_cpu_stat_stream(MedicCpuStatSink cb, void* data) {
     natural_t cpu_count;
     processor_info_array_t cpuinfo;
     mach_msg_type_number_t cpuinfo_count;
@@ -105,7 +107,7 @@ int medic_cpu_stream(MedicCpuSink cb, void* data) {
 
     for (size_t i = 0; i < cpu_count; i++) {
         integer_t* ticks = &cpuinfo[i * CPU_STATE_MAX];
-        MedicCpu cpu;
+        MedicCpuStat cpu;
         cpu.user = (double)ticks[CPU_STATE_USER] / ticks_per_sec;
         cpu.system = (double)ticks[CPU_STATE_SYSTEM] / ticks_per_sec;
         cpu.nice = (double)ticks[CPU_STATE_NICE] / ticks_per_sec;
@@ -117,7 +119,7 @@ int medic_cpu_stream(MedicCpuSink cb, void* data) {
     return 0;
 }
 
-int medic_cpu_diff(const MedicCpu* start, const MedicCpu* end, MedicCpuDiff* out) {
+int medic_cpu_stat_diff(const MedicCpuStat* start, const MedicCpuStat* end, MedicCpuDiff* out) {
     if (start == NULL || end == NULL || out == NULL)
         return -1;
 

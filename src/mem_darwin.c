@@ -1,14 +1,16 @@
-#include <mach/mach.h>
 #include <stdio.h>
 #include <sys/sysctl.h>
+
+#include <mach/mach.h>
+
 #include "mem.h"
 
 uint64_t medic_mem_size(void) {
     long long memsize;
-    size_t size = sizeof(memsize);
+    size_t memsizesize = sizeof(memsize);
 
     int mib_path[2] = { CTL_HW, HW_MEMSIZE };
-    int code = sysctl(mib_path, 2, &memsize, &size, NULL, 0);
+    int code = sysctl(mib_path, 2, &memsize, &memsizesize, NULL, 0);
     if (code == -1)
         return 0;
 
@@ -20,15 +22,13 @@ uint64_t medic_mem_used(uint64_t mem_size) {
         return 0;
 
     vm_size_t page_size;
-    if (host_page_size(mach_host_self(), &page_size) != KERN_SUCCESS) {
+    if (host_page_size(mach_host_self(), &page_size) != KERN_SUCCESS)
         return 0;
-    }
 
     vm_statistics64_data_t vm_stat;
     mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
-    if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vm_stat, &count) != KERN_SUCCESS) {
+    if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vm_stat, &count) != KERN_SUCCESS)
         return 0;
-    }
 
     uint64_t free_bytes = (vm_stat.free_count - vm_stat.speculative_count) * page_size;
     // uint64_t wired_bytes = vm_stat.wire_count * page_size;

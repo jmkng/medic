@@ -4,14 +4,14 @@
 #include <stddef.h>
 
 /*
- * Returns the number of physical processor cores available in the current
+ * Return the number of physical processor cores available in the current
  * power management mode.
  *
  * @return
  *      Number of physical processor cores on success,
  *      or -1 on error.
  */
-int medic_physical_cpu(void);
+int medic_cpu_num_physical(void);
 
 /*
  * Returns the number of logical processor cores available in the current
@@ -21,13 +21,13 @@ int medic_physical_cpu(void);
  *      Number of logical processor cores on success,
  *      or -1 on error.
  */
-int medic_logical_cpu(void);
+int medic_cpu_num_logical(void);
 
 typedef struct {
     double load_1;
     double load_5;
     double load_15;
-} MedicLoad;
+} MedicCpuRunQueueTriple;
 
 /*
  * Returns the number of processes in the system run queue averaged
@@ -36,25 +36,25 @@ typedef struct {
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_load_avg(MedicLoad* ml);
+int medic_cpu_run_queue_triple(MedicCpuRunQueueTriple* ml);
 
 typedef struct {
     double user;
     double system;
     double nice;
     double idle;
-} MedicCpu;
+} MedicCpuStat;
 
 /*
- * Copies a MedicCpu struct with current statistics to ss.
+ * Copy a `MedicCpuStat` with current statistics to ss.
  * The value is an aggregate over all processor cores.
  *
- * For per-core statistics, use `medic_cpu_stream`.
+ * For per-core statistics, use `medic_cpu_stat_stream`.
  *
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu(MedicCpu* ss);
+int medic_cpu_agg_stat(MedicCpuStat* ss);
 
 /*
  * Callback type used by `medic_cpu_stream`.
@@ -63,19 +63,21 @@ int medic_cpu(MedicCpu* ss);
  * The pointer is only valid for the duration of the callback invocation;
  * if the value needs to persist, it must be copied by the caller.
  */
-typedef void (*MedicCpuSink)(const MedicCpu* cpu, void* data);
+typedef void (*MedicCpuStatSink)(const MedicCpuStat* cpu, void* data);
 
 /*
- * Streams processor core statistics.
+ * Stream processor core statistics.
  *
  * Calls the given callback for each processor.
  * Each callback invocation receives a pointer to a MedicUser struct,
  * valid only for the duration of the callback.
  *
+ * For aggregate statistics, use `medic_cpu_agg_stat`.
+ *
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu_stream(MedicCpuSink cb, void* data);
+int medic_cpu_stat_stream(MedicCpuStatSink cb, void* data);
 
 typedef struct {
     double total;
@@ -87,15 +89,15 @@ typedef struct {
 } MedicCpuDiff;
 
 /*
- * Copies the difference of two instances of `MedicCpu` to out.
+ * Copies the difference between two `MedicCpuStat` to out.
  *
- * To use, capture an initial sample with `medic_cpu`,
+ * Capture an initial sample with `medic_cpu_agg_stat`,
  * wait the desired interval, then capture a second sample.
  * Pass both snapshots to this function to compute the usage over that interval.
  *
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu_diff(const MedicCpu* start, const MedicCpu* end, MedicCpuDiff* out);
+int medic_cpu_stat_diff(const MedicCpuStat* start, const MedicCpuStat* end, MedicCpuDiff* out);
 
 #endif

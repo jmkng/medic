@@ -10,32 +10,32 @@ typedef struct {
     uint64_t block_size; /* Blocks size in bytes. */
     uint64_t blocks_free;
     uint64_t blocks_avail_non_root;
-} MedicMountStat;
+} MedicFsMountStat;
 
 typedef struct {
     const char* mountpoint;
     const char* device;
     const char* fstype;
-    MedicMountStat stat;
-} MedicMount;
+    MedicFsMountStat stat;
+} MedicFsMount;
 
 /*
- * Callback type used by `medic_mount_stream`.
+ * Callback type used by `medic_fs_mount_stream`.
  * Each invocation is passed a pointer to a file system.
  *
  * The pointer is only valid for the duration of the callback invocation;
  * if the value needs to persist, it must be copied by the caller.
  */
-typedef void (*MedicMountSink)(const MedicMount* mount, void* data);
+typedef void (*MedicFsMountSink)(const MedicFsMount* mount, void* data);
 
 /*
- * Streams mounted file systems.
+ * Stream mounted file systems.
  *
  * Calls the given callback for each mounted file system.
  * Each callback invocation receives a pointer to a MedicMount struct,
  * valid only for the duration of the callback.
  */
-void medic_mount_stream(MedicMountSink cb, void* data);
+void medic_fs_mount_stream(MedicFsMountSink cb, void* data);
 
 /*
  * Copies file system statistics for mountpoint to out.
@@ -48,6 +48,6 @@ void medic_mount_stream(MedicMountSink cb, void* data);
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_mount_stat(const char* mountpoint, MedicMountStat* out);
+int medic_fs_mount_stat(const char* mountpoint, MedicFsMountStat* out);
 
 #endif
