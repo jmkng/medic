@@ -10,7 +10,7 @@
  *
  * @return
  *      The boot time as seconds since the UNIX epoch (1970-01-01 00:00:00 UTC),
- *      or -1 if an error occurred while retrieving the boot time.
+ *      or 0 if an error occurred while retrieving the boot time.
  */
 uint64_t medic_host_boot_time(void);
 
@@ -19,7 +19,7 @@ uint64_t medic_host_boot_time(void);
  *
  * @return
  *      The uptime in seconds,
- *      or -1 if an error occurred while retrieving the boot time.
+ *      or 0 if an error occurred while retrieving the boot time.
  */
 uint64_t medic_host_uptime(void);
 

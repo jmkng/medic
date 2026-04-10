@@ -19,7 +19,7 @@ uint64_t medic_host_boot_time(void) {
     int mib_path[2] = { CTL_KERN, KERN_BOOTTIME };
     int code = sysctl(mib_path, 2, &boottime, &boottimesize, NULL, 0);
     if (code == -1)
-        return -1;
+        return 0;
 
     return (uint64_t)boottime.tv_sec;
 }
@@ -27,7 +27,7 @@ uint64_t medic_host_boot_time(void) {
 uint64_t medic_host_uptime(void) {
     long boot_time = medic_host_boot_time();
     if (boot_time == -1)
-        return -1;
+        return 0;
 
     long now = time(NULL);
     long diff_secs = now - boot_time;
