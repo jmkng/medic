@@ -1,6 +1,7 @@
 #ifndef MEDIC_CPU_H
 #define MEDIC_CPU_H
 
+#include <stdlib.h>
 #include <stddef.h>
 
 /*
@@ -11,7 +12,7 @@
  *      Number of physical processor cores on success,
  *      or -1 on error.
  */
-int medic_cpu_num_physical(void);
+int32_t medic_cpu_num_physical(void);
 
 /*
  * Returns the number of logical processor cores available in the current
@@ -21,7 +22,7 @@ int medic_cpu_num_physical(void);
  *      Number of logical processor cores on success,
  *      or -1 on error.
  */
-int medic_cpu_num_logical(void);
+int32_t medic_cpu_num_logical(void);
 
 typedef struct {
     double load_1;
@@ -36,7 +37,7 @@ typedef struct {
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu_run_queue_triple(MedicCpuRunQueueTriple* ml);
+int32_t medic_cpu_run_queue_triple(MedicCpuRunQueueTriple* ml);
 
 typedef struct {
     double user;
@@ -54,7 +55,7 @@ typedef struct {
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu_agg_stat(MedicCpuStat* ss);
+int32_t medic_cpu_agg_stat(MedicCpuStat* ss);
 
 /*
  * Callback type used by `medic_cpu_stream`.
@@ -77,7 +78,7 @@ typedef void (*MedicCpuStatSink)(const MedicCpuStat* cpu, void* data);
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu_stat_stream(MedicCpuStatSink cb, void* data);
+int32_t medic_cpu_stat_stream(MedicCpuStatSink cb, void* data);
 
 typedef struct {
     double total;
@@ -98,6 +99,6 @@ typedef struct {
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_cpu_stat_diff(const MedicCpuStat* start, const MedicCpuStat* end, MedicCpuDiff* out);
+int32_t medic_cpu_stat_diff(const MedicCpuStat* start, const MedicCpuStat* end, MedicCpuDiff* out);
 
 #endif

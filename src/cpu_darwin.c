@@ -16,7 +16,7 @@ typedef enum {
     LOGICAL
 } MedicCpuType;
 
-int _medic_num_cpu(MedicCpuType type) {
+int32_t _medic_num_cpu(MedicCpuType type) {
     assert(type == PHYSICAL || type == LOGICAL);
     const char* sysctl_name = NULL;
 
@@ -37,15 +37,15 @@ int _medic_num_cpu(MedicCpuType type) {
     return num;
 }
 
-int medic_cpu_num_physical(void) {
+int32_t medic_cpu_num_physical(void) {
     return _medic_num_cpu(PHYSICAL);
 }
 
-int medic_cpu_num_logical(void) {
+int32_t medic_cpu_num_logical(void) {
     return _medic_num_cpu(LOGICAL);
 }
 
-int medic_cpu_run_queue_triple(MedicCpuRunQueueTriple* ml) {
+int32_t medic_cpu_run_queue_triple(MedicCpuRunQueueTriple* ml) {
     if (!ml)
         return -1;
 
@@ -61,7 +61,7 @@ int medic_cpu_run_queue_triple(MedicCpuRunQueueTriple* ml) {
     return 0;
 }
 
-int medic_cpu_agg_stat(MedicCpuStat* ss) {
+int32_t medic_cpu_agg_stat(MedicCpuStat* ss) {
     if (!ss)
         return -1;
 
@@ -88,7 +88,7 @@ int medic_cpu_agg_stat(MedicCpuStat* ss) {
     return 0;
 }
 
-int medic_cpu_stat_stream(MedicCpuStatSink cb, void* data) {
+int32_t medic_cpu_stat_stream(MedicCpuStatSink cb, void* data) {
     natural_t cpu_count;
     processor_info_array_t cpuinfo;
     mach_msg_type_number_t cpuinfo_count;
@@ -119,7 +119,7 @@ int medic_cpu_stat_stream(MedicCpuStatSink cb, void* data) {
     return 0;
 }
 
-int medic_cpu_stat_diff(const MedicCpuStat* start, const MedicCpuStat* end, MedicCpuDiff* out) {
+int32_t medic_cpu_stat_diff(const MedicCpuStat* start, const MedicCpuStat* end, MedicCpuDiff* out) {
     if (start == NULL || end == NULL || out == NULL)
         return -1;
 

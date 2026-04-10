@@ -2,6 +2,7 @@
 #define MEDIC_FS_H
 
 #include <string.h>
+
 #include <sys/mount.h>
 #include <sys/param.h>
 
@@ -48,6 +49,6 @@ void medic_fs_mount_stream(MedicFsMountSink cb, void* data);
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_fs_mount_stat(const char* mountpoint, MedicFsMountStat* out);
+int32_t medic_fs_mount_stat(const char* mountpoint, MedicFsMountStat* out);
 
 #endif

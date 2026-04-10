@@ -21,7 +21,7 @@ void medic_fs_mount_stream(MedicFsMountSink cb, void* userdata) {
     }
 }
 
-int medic_fs_mount_stat(const char* mountpoint, MedicFsMountStat* out) {
+int32_t medic_fs_mount_stat(const char* mountpoint, MedicFsMountStat* out) {
     if (!out)
         return -1;
 

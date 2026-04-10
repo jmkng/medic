@@ -2,6 +2,7 @@
 #define MEDIC_HOST_H
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <time.h>
 
 /*
@@ -11,7 +12,7 @@
  *      The boot time as seconds since the UNIX epoch (1970-01-01 00:00:00 UTC),
  *      or -1 if an error occurred while retrieving the boot time.
  */
-long medic_host_boot_time(void);
+uint64_t medic_host_boot_time(void);
 
 /*
  * Returns the system uptime in seconds.
@@ -20,7 +21,7 @@ long medic_host_boot_time(void);
  *      The uptime in seconds,
  *      or -1 if an error occurred while retrieving the boot time.
  */
-long medic_host_uptime(void);
+uint64_t medic_host_uptime(void);
 
 /*
  * Copies the system kernel version to buffer as a null terminated string.
@@ -28,7 +29,7 @@ long medic_host_uptime(void);
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_host_kernel_version(char* buffer, size_t size);
+int32_t medic_host_kernel_version(char* buffer, size_t size);
 
 /*
  * Copies the system kernel type to buffer as a null terminated string.
@@ -36,7 +37,7 @@ int medic_host_kernel_version(char* buffer, size_t size);
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_host_kernel_type(char* buffer, size_t size);
+int32_t medic_host_kernel_type(char* buffer, size_t size);
 
 /*
  * Copies the system host architecture to buffer as a null terminated string.
@@ -44,7 +45,7 @@ int medic_host_kernel_type(char* buffer, size_t size);
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_host_arch(char* buffer, size_t size);
+int32_t medic_host_arch(char* buffer, size_t size);
 
 /*
  * Copies the system host name to buffer as a null terminated string.
@@ -52,7 +53,7 @@ int medic_host_arch(char* buffer, size_t size);
  * @return
  *      0 on success, or -1 on error.
  */
-int medic_host_name(char* buffer, size_t size);
+int32_t medic_host_name(char* buffer, size_t size);
 
 typedef struct {
     const char* name;

@@ -12,7 +12,7 @@
 
 #include "host.h"
 
-long medic_host_boot_time(void) {
+uint64_t medic_host_boot_time(void) {
     struct timeval boottime;
     size_t boottimesize = sizeof(boottime);
 
@@ -21,20 +21,20 @@ long medic_host_boot_time(void) {
     if (code == -1)
         return -1;
 
-    return boottime.tv_sec;
+    return (uint64_t)boottime.tv_sec;
 }
 
-long medic_host_uptime(void) {
+uint64_t medic_host_uptime(void) {
     long boot_time = medic_host_boot_time();
     if (boot_time == -1)
         return -1;
 
     long now = time(NULL);
     long diff_secs = now - boot_time;
-    return diff_secs;
+    return (uint64_t)diff_secs;
 }
 
-int medic_host_kernel_version(char* buffer, size_t size) {
+int32_t medic_host_kernel_version(char* buffer, size_t size) {
     int mib_path[2] = { CTL_KERN, KERN_OSRELEASE };
     int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
     if (code == -1)
@@ -43,7 +43,7 @@ int medic_host_kernel_version(char* buffer, size_t size) {
     return 0;
 }
 
-int medic_host_kernel_type(char* buffer, size_t size) {
+int32_t medic_host_kernel_type(char* buffer, size_t size) {
     int mib_path[2] = { CTL_KERN, KERN_OSTYPE };
     int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
     if (code == -1)
@@ -52,7 +52,7 @@ int medic_host_kernel_type(char* buffer, size_t size) {
     return 0;
 }
 
-int medic_host_arch(char* buffer, size_t size) {
+int32_t medic_host_arch(char* buffer, size_t size) {
     // HW_MACHINE is deprecated, but I'm not sure what the replacement is.
     // It says to use HW_PRODUCT but that isn't the same information.
     int mib_path[2] = { CTL_HW, HW_MACHINE };
@@ -63,7 +63,7 @@ int medic_host_arch(char* buffer, size_t size) {
     return 0;
 }
 
-int medic_host_name(char* buffer, size_t size) {
+int32_t medic_host_name(char* buffer, size_t size) {
     int mib_path[2] = { CTL_KERN, KERN_HOSTNAME };
     int code = sysctl(mib_path, 2, buffer, &size, NULL, 0);
     if (code == -1)
