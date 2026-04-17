@@ -130,6 +130,7 @@ int32_t medic_cpu_stat_diff(const MedicCpuStat* start, const MedicCpuStat* end, 
     if (total_diff <= 0.0)
         return -1;
 
+    out->total = total_diff;
     double user_diff = end->user - start->user;
     out->user = user_diff;
     out->system = end->system - start->system;
